@@ -1,0 +1,43 @@
+name: Dotnet CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          cache: true
+          cache-dependency-path: BasicWebApp/*.csproj
+
+      - name: Restore
+        run: dotnet restore ./BasicWebApp/BasicWebApp.csproj
+
+      - name: Build
+        run: dotnet build ./BasicWebApp/BasicWebApp.csproj --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish ./BasicWebApp/BasicWebApp.csproj --configuration Release --no-build --output ./artifacts/publish
+
+      - name: Upload published artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: basicwebapp-publish
+          path: artifacts/publish
